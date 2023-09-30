@@ -1,102 +1,99 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 
-// Create a scene
 const scene = new THREE.Scene();
-
-// Create a camera with isometric view
 const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
-camera.position.set(5, 5, 5);
-camera.lookAt(0, 0, 0);
-
-// Create a renderer
-const renderer = new THREE.WebGLRenderer();
+const renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('visualization') });
 renderer.setSize(window.innerWidth, window.innerHeight);
-document.body.appendChild(renderer.domElement);
 
-// Create a sun-like sphere (the sun)
-const sunGeometry = new THREE.SphereGeometry(1, 32, 32);
-const sunMaterial = new THREE.MeshBasicMaterial({ color: 0xffff00 });
-const sun = new THREE.Mesh(sunGeometry, sunMaterial);
-scene.add(sun);
+// Define planet data in JSON format
+const planetData = [
+    {
+        name: 'Sun',
+        radius: 1, // Larger radius for the sun
+        color: 0xffff00,
+        distance: 0, // Sun is at the center
+        rotationSpeed: 0.01, // Adjust as needed
+        revolutionSpeed: 0, // Sun doesn't revolve
+        orbitAngle: 0,
+        rotationAngle: 0,
+    },
+    {
+        name: 'Earth',
+        radius: 0.3,
+        color: 0x0000ff,
+        distance: 2,
+        rotationSpeed: 0.05,
+        revolutionSpeed: 0.01,
+        orbitAngle: 0,
+        rotationAngle: 0,
+    },
+    {
+        name: 'Mars',
+        radius: 0.2,
+        color: 0xff0000,
+        distance: 3.5,
+        rotationSpeed: 0.03,
+        revolutionSpeed: 0.008,
+        orbitAngle: Math.PI / 4, 
+        rotationAngle: 0,
+    },
+    {
+        name: 'Benus',
+        radius: 0.4,
+        color: 0xa154f8,
+        distance: 5,
+        rotationSpeed: 0.03,
+        revolutionSpeed: 0.008,
+        orbitAngle: Math.PI / 4,
+        rotationAngle: 0,
+    },
+    // Add more planet data as needed
+];
 
-// Function to create a planet
-function createPlanet(radius, color, distance) {
-    const geometry = new THREE.SphereGeometry(radius, 32, 32);
-    const material = new THREE.MeshBasicMaterial({ color });
+// Create planets based on JSON data
+const planets = planetData.map((data) => {
+    const geometry = new THREE.SphereGeometry(data.radius, 32, 32);
+    const material = new THREE.MeshBasicMaterial({ color: data.color });
     const planet = new THREE.Mesh(geometry, material);
-    planet.distance = distance;
+    planet.distance = data.distance;
+    planet.name = data.name;
+    planet.orbitAngle = data.orbitAngle;
     scene.add(planet);
     return planet;
-}
+});
 
-// Create Earth
-const earth = createPlanet(0.3, 0x0000ff, 2);
+function animate() {
+    requestAnimationFrame(animate);
 
-// Create Mars
-const mars = createPlanet(0.2, 0xff0000, 3.5);
+    planetData.forEach((data, index) => {
+        data.rotationAngle += data.rotationSpeed;
+        planets[index].rotation.y = data.rotationAngle;
 
-// Set initial angles for faster rotation and revolution
-let earthRotationAngle = 0;
-let marsRotationAngle = 0;
-let earthRevolutionAngle = 0;
-let marsRevolutionAngle = 0;
+        data.orbitAngle += data.revolutionSpeed;
+        const x = data.distance * Math.cos(data.orbitAngle);
+        const z = data.distance * Math.sin(data.orbitAngle);
+        planets[index].position.set(x, 0, z);
+    });
 
-// Create a function to animate the planets' rotation and revolution
-function animatePlanets() {
-    earthRotationAngle += 0.05; // Increase Earth's rotation speed
-    marsRotationAngle += 0.03; // Increase Mars's rotation speed
-    earthRevolutionAngle += 0.01; // Increase Earth's revolution speed
-    marsRevolutionAngle += 0.008; // Increase Mars's revolution speed
-
-    // Rotate Earth and Mars
-    earth.rotation.y = earthRotationAngle;
-    mars.rotation.y = marsRotationAngle;
-
-    // Revolution of Earth and Mars around the Sun
-    const earthX = earth.distance * Math.cos(earthRevolutionAngle);
-    const earthZ = earth.distance * Math.sin(earthRevolutionAngle);
-    earth.position.set(earthX, 0, earthZ);
-
-    const marsX = mars.distance * Math.cos(marsRevolutionAngle);
-    const marsZ = mars.distance * Math.sin(marsRevolutionAngle);
-    mars.position.set(marsX, 0, marsZ);
-
-    // Update the controls
     controls.update();
-
-    requestAnimationFrame(animatePlanets);
-
     renderer.render(scene, camera);
 }
 
-// Create OrbitControls
+// Add Sun
+const sunGeometry = new THREE.SphereGeometry(planetData[0].radius, 32, 32);
+const sunMaterial = new THREE.MeshBasicMaterial({ color: planetData[0].color });
+const sun = new THREE.Mesh(sunGeometry, sunMaterial);
+scene.add(sun);
+
 const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+controls.dampingFactor = 0.05;
+controls.rotateSpeed = 0.2;
+controls.zoomSpeed = 0.5;
 
-// Function to create an orbital line
-function createOrbitLine(distance) {
-    const segments = 128; // Number of segments to create a smooth circle
-    const geometry = new THREE.BufferGeometry();
-    const positions = [];
+// Set the initial camera position and look at the sun
+camera.position.set(0, 0, 5); // Adjust the distance as needed
+camera.lookAt(sun.position);
 
-    for (let i = 0; i <= segments; i++) {
-        const angle = (i / segments) * Math.PI * 2;
-        const x = distance * Math.cos(angle);
-        const z = distance * Math.sin(angle);
-        positions.push(x, 0, z);
-    }
-
-    geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
-    const material = new THREE.LineBasicMaterial({ color: 0xffffff });
-    return new THREE.Line(geometry, material);
-}
-
-// Create orbital lines for Earth and Mars
-const earthOrbitLine = createOrbitLine(2);
-scene.add(earthOrbitLine);
-
-const marsOrbitLine = createOrbitLine(3.5);
-scene.add(marsOrbitLine);
-
-// Start the animation
-animatePlanets();
+animate();
