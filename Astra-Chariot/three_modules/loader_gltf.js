@@ -97,7 +97,4 @@ function animate() {
   render();
 }
 
-// ...
-
-// Call the animate function to start the animation loop
 animate();
