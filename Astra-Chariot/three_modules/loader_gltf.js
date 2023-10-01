@@ -1,12 +1,25 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import GUI from 'lil-gui'
 
 let camera, scene, renderer, directionalLight;
 
+class ColorGUIHelper {
+  constructor(object, prop) {
+    this.object = object;
+    this.prop = prop;
+  }
+  get value() {
+    return `#${this.object[this.prop].getHexString()}`;
+  }
+  set value(hexString) {
+    this.object[this.prop].set(hexString);
+  }
+}
+
 init();
 render();
-
 
 function dumpObject(obj, lines = [], isLast = true, prefix = '') {
   const localPrefix = isLast ? '└─' : '├─';
@@ -21,6 +34,7 @@ function dumpObject(obj, lines = [], isLast = true, prefix = '') {
 }
 
 
+
 function init() {
   const container = document.createElement('div');
   document.body.appendChild(container);
@@ -30,11 +44,15 @@ function init() {
 
   scene = new THREE.Scene();
   scene.background = new THREE.Color(0x333333); // Set a background color (optional)
-
+  
   // Add a directional light
   directionalLight = new THREE.DirectionalLight(0xffffff, 0.5); // Color, Intensity
   directionalLight.position.set(1, 1, 1); // Position the light
   scene.add(directionalLight);
+
+  const gui = new GUI();
+  gui.addColor(new ColorGUIHelper(directionalLight, 'color'), 'value').name('color');
+  gui.add(directionalLight, 'intensity', 0, 1, 0.01);
 
   // Model
   const loader = new GLTFLoader().setPath('../3d_asset/');
@@ -73,3 +91,13 @@ function onWindowResize() {
 function render() {
   renderer.render(scene, camera);
 }
+
+function animate() {
+  requestAnimationFrame(animate);
+  render();
+}
+
+// ...
+
+// Call the animate function to start the animation loop
+animate();
