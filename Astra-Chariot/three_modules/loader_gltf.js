@@ -33,6 +33,13 @@ function dumpObject(obj, lines = [], isLast = true, prefix = '') {
   return lines;
 }
 
+function makeXYZGUI(gui, vector3, name, onChangeFn) {
+  const folder = gui.addFolder(name);
+  folder.add(vector3, 'x', -10, 10).onChange(onChangeFn);
+  folder.add(vector3, 'y', 0, 10).onChange(onChangeFn);
+  folder.add(vector3, 'z', -10, 10).onChange(onChangeFn);
+  folder.open();
+}
 
 
 function init() {
@@ -53,6 +60,17 @@ function init() {
   const gui = new GUI();
   gui.addColor(new ColorGUIHelper(directionalLight, 'color'), 'value').name('color');
   gui.add(directionalLight, 'intensity', 0, 1, 0.01);
+  
+  const helper = new THREE.DirectionalLightHelper(directionalLight); 
+  scene.add(helper);
+
+  makeXYZGUI(gui, directionalLight.position, 'position', updateLight);
+  makeXYZGUI(gui, directionalLight.target.position, 'target', updateLight);
+
+  function updateLight() {
+    directionalLight.target.updateMatrixWorld();
+    helper.update();
+  }
 
   // Model
   const loader = new GLTFLoader().setPath('../3d_asset/');
@@ -89,6 +107,7 @@ function onWindowResize() {
 }
 
 function render() {
+
   renderer.render(scene, camera);
 }
 
@@ -96,5 +115,6 @@ function animate() {
   requestAnimationFrame(animate);
   render();
 }
+
 
 animate();
