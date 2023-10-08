@@ -6,10 +6,10 @@ We are building a solar system wide travel plan as if human successfully becomin
 
 Our Team
 
-Ainun Ni'mah Milenia Gusti
-Micko Lesmana
-Nouvelli Cornelia
-Renggani Ghifari
+- Ainun Ni'mah Milenia Gusti
+- Micko Lesmana
+- Nouvelli Cornelia
+- Renggani Ghifari
 
 Inspiration:
 This project was going to be inspired by the  
