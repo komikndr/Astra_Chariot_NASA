@@ -6,6 +6,8 @@ import Camera from "./Camera";
 import Sizes from "./Utils/Sizes";
 import Time from "./Utils/Time";
 import Assets from "./Utils/Assets";
+import Resources from "./Utils/Resources";
+import World from "./World/World.js"
 
 class App {
   static instance;
@@ -20,6 +22,8 @@ class App {
     this.camera = new Camera();
     this.time = new Time();
     this.renderer = new Renderer();
+    this.resources = new Resources(Assets);
+    this.world = new World();
 
     this.time.on("update", () => {
       this.update();
@@ -35,7 +39,7 @@ class App {
   }
   update() {
     this.camera.update();
-
+    this.world.update()
     this.renderer.update();
   }
 }

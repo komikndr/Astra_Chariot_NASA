@@ -1,12 +1,12 @@
 export default [
     {
-        name: "room",
+        name: "sol",
         type: "glbModel",
-        path: "/models/Finale Version 16.glb",
-    },
-    {
-        name: "screen",
-        type: "videoTexture",
-        path: "/textures/kda.mp4",
-    },
+        path: "/models/solar_system.glb",
+    }
+    // {
+    //     name: "screen",
+    //     type: "videoTexture",
+    //     path: "/textures/kda.mp4",
+    // },
 ];
